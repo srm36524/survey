@@ -28,9 +28,8 @@ st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# A5 page approximate height (for 96 DPI screens)
-a5_page_height = 793  # ~ 793px height for A5
-chart_height = 600  # Chart height to fit one per page
+# Approximate A5 page height for 96 DPI screens
+chart_height = 600  # Height for one chart to neatly fit per page
 
 for idx, col in enumerate(questions):
 
@@ -92,7 +91,7 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Page break after every chart (one per A5 page)
+    # Controlled spacing after each chart for new A5 page
     st.markdown('<div class="pagebreak" style="height: 50px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling

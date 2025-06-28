@@ -22,14 +22,16 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Fixed spacing after title
-st.markdown('<div style="height: 550px;"></div>', unsafe_allow_html=True)
+# Top Margin after Title: 1.5 cm ≈ 57 px
+st.markdown('<div style="height: 57px;"></div>', unsafe_allow_html=True)
 
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Approximate A5 page height for 96 DPI screens
-chart_height = 600  # Height for one chart to neatly fit per page
+# A5 page height simulation
+a5_total_height_px = 793
+top_bottom_margin_px = 57
+chart_height = a5_total_height_px - (top_bottom_margin_px * 2)  # space for chart itself
 
 for idx, col in enumerate(questions):
 
@@ -91,8 +93,11 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Controlled spacing after each chart for new A5 page
-    st.markdown('<div class="pagebreak" style="height: 50px;"></div>', unsafe_allow_html=True)
+    # Space after chart simulating bottom margin (1.5 cm ≈ 57 px)
+    st.markdown(f'<div style="height: {top_bottom_margin_px}px;"></div>', unsafe_allow_html=True)
+
+    # Page Break Simulation
+    st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""
@@ -110,7 +115,6 @@ st.markdown("""
     }
     .pagebreak {
         page-break-after: always;
-        margin-top: 50px;
     }
 </style>
 """, unsafe_allow_html=True)

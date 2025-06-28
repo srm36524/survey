@@ -22,12 +22,11 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# User input for spacing between title and first chart
-spacing = st.number_input("Space (pixels) between title and first chart:", min_value=0, value=450, step=50)
-st.markdown(f'<div style="height: {spacing}px;"></div>', unsafe_allow_html=True)
+# Fixed spacing after title
+st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
 
-# Filter valid question columns only (non-empty, properly named)
-questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip() not in ["", "undefined", "nan", "NaN"]]
+# Filter valid question columns
+questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
 for i in range(0, len(questions), 2):
     for j in range(2):

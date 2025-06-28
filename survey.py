@@ -10,6 +10,8 @@ from PIL import Image
 from tempfile import NamedTemporaryFile
 import os
 
+pio.kaleido.scope.default_format = "png"
+
 # Load data
 @st.cache_data
 def load_data():
@@ -102,9 +104,11 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-            # Save chart image to temp file for Excel
-            img_bytes = pio.to_image(fig, format='png', width=900, height=400, scale=2)
-            image_chart_data.append((col, img_bytes))
+            try:
+                img_bytes = pio.to_image(fig, format='png', width=900, height=400, scale=2)
+                image_chart_data.append((col, img_bytes))
+            except Exception as e:
+                st.warning(f"Could not generate image for '{col}'. Ensure Kaleido is installed. {e}")
 
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 

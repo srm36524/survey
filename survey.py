@@ -22,8 +22,11 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Fixed space between title and first chart (450px)
-st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
+# User-controlled space between title and first chart/table
+chart_spacing = st.number_input("Space (pixels) between title and first chart:", min_value=0, value=450, step=50)
+table_spacing = st.number_input("Space (pixels) between title and first data table:", min_value=0, value=450, step=50)
+
+st.markdown(f'<div style="height: {chart_spacing}px;"></div>', unsafe_allow_html=True)
 
 # Filter valid question columns only (non-empty, properly named)
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip() not in ["", "undefined", "nan", "NaN"]]
@@ -88,6 +91,9 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
+            st.markdown(f'<div style="height: {table_spacing}px;"></div>', unsafe_allow_html=True)
+            st.dataframe(chart_df[['Response', 'Count', 'Percentage']], use_container_width=True)
+
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
@@ -111,4 +117,4 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.success("Select filters to view question-wise bar charts.")
+st.success("Select filters to view charts and tables for each question.")

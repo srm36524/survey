@@ -23,11 +23,14 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Export option
-excel_output = BytesIO()
-filtered_df.to_excel(excel_output, index=False)
-excel_output.seek(0)
-st.download_button("Download Filtered Data as Excel", data=excel_output, file_name="Filtered_Survey_Data.xlsx")
+# Export filtered data to Excel
+data_output = BytesIO()
+filtered_df.to_excel(data_output, index=False)
+data_output.seek(0)
+st.download_button("Download Filtered Data as Excel", data=data_output, file_name="Filtered_Survey_Data.xlsx")
+
+# Prepare chart summary data for export
+chart_summary = []
 
 # Add space to avoid dropdown overlap with charts, charts start from second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
@@ -54,6 +57,8 @@ for i in range(0, len(questions), 2):
                 'Count': count_series.values,
                 'Percentage': percent_series.values
             })
+
+            chart_summary.append(chart_df.assign(Question=col))
 
             # Wrap labels based on whole words, not characters
             def wrap_label(label, width=25):
@@ -90,8 +95,15 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-    # Ensure clear page break after each pair of charts
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
+
+# Export chart summary to Excel
+if chart_summary:
+    summary_df = pd.concat(chart_summary, ignore_index=True)
+    excel_output = BytesIO()
+    summary_df.to_excel(excel_output, index=False)
+    excel_output.seek(0)
+    st.download_button("Download All Chart Data as Excel", data=excel_output, file_name="All_Chart_Summary.xlsx")
 
 # Frontend Styling
 st.markdown("""

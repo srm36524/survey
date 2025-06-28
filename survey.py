@@ -22,89 +22,89 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Top Margin after Title: 1 cm ≈ 38 px
-st.markdown('<div style="height: 38px;"></div>', unsafe_allow_html=True)
+# Force first chart to appear from second page
+st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Pre-calculate max heading space
+# Pre-calculate max heading space based on longest question
 max_question_length = max(len(str(q)) for q in questions)
 estimated_lines = (max_question_length // 80) + 1
-heading_space_px = estimated_lines * 20 + 10  # Rough estimate for consistent heading space
+heading_space_px = estimated_lines * 20 + 10  # consistent heading space
 
-# A4 height simulation in pixels (297mm ≈ 1122px)
+# A4 height simulation: 297mm ≈ 1122px, 1.5 cm top/bottom ≈ 57px
 a4_total_height_px = 1122
-top_bottom_margin_px = 38  # 1 cm ≈ 38px
+top_bottom_margin_px = 57
 available_height = a4_total_height_px - (2 * top_bottom_margin_px)
-chart_height = available_height / 2  # Two charts per page
+chart_height = available_height  # One chart per page
 
-for i in range(0, len(questions), 2):
+for idx, col in enumerate(questions):
 
-    for j in range(2):
-        if i + j < len(questions):
-            col = questions[i + j]
+    st.markdown(f'<div style="height: {heading_space_px}px; display:flex; align-items:center;"><h3>{col}</h3></div>', unsafe_allow_html=True)
 
-            # Uniform heading space for all questions
-            st.markdown(f'<div style="height: {heading_space_px}px; display:flex; align-items:center;"><h3>{col}</h3></div>', unsafe_allow_html=True)
+    question_data = filtered_df[col].dropna().astype(str)
+    if question_data.empty:
+        st.info("No responses for this question.")
+        continue
 
-            question_data = filtered_df[col].dropna().astype(str)
-            if question_data.empty:
-                st.info("No responses for this question.")
-                continue
+    count_series = question_data.value_counts()
+    count_series = count_series[count_series > 0]
 
-            count_series = question_data.value_counts()
-            count_series = count_series[count_series > 0]
+    if count_series.empty:
+        st.info("No valid responses to display.")
+        continue
 
-            if count_series.empty:
-                st.info("No valid responses to display.")
-                continue
+    percent_series = (count_series / count_series.sum() * 100).round(2)
 
-            percent_series = (count_series / count_series.sum() * 100).round(2)
+    chart_df = pd.DataFrame({
+        'Response': count_series.index,
+        'Count': count_series.values,
+        'Percentage': percent_series.values
+    })
 
-            chart_df = pd.DataFrame({
-                'Response': count_series.index,
-                'Count': count_series.values,
-                'Percentage': percent_series.values
-            })
+    def wrap_label(label, width=25):
+        return "<br>".join(textwrap.wrap(label, width=width))
 
-            def wrap_label(label, width=25):
-                return "<br>".join(textwrap.wrap(label, width=width))
+    chart_df['Wrapped_Response'] = chart_df['Response'].apply(lambda x: wrap_label(str(x)))
 
-            chart_df['Wrapped_Response'] = chart_df['Response'].apply(lambda x: wrap_label(str(x)))
+    fig = px.bar(
+        chart_df,
+        y='Wrapped_Response',
+        x='Count',
+        orientation='h',
+        text=chart_df.apply(lambda row: f"{int(row['Count'])} ({row['Percentage']}%)", axis=1),
+        labels={'Count': 'Number of Responses'},
+        color_discrete_sequence=px.colors.qualitative.Bold
+    )
 
-            fig = px.bar(
-                chart_df,
-                y='Wrapped_Response',
-                x='Count',
-                orientation='h',
-                text=chart_df.apply(lambda row: f"{int(row['Count'])} ({row['Percentage']}%)", axis=1),
-                labels={'Count': 'Number of Responses'},
-                color_discrete_sequence=px.colors.qualitative.Bold
-            )
+    fig.update_traces(textposition='outside', textfont_color='black', width=0.6)
+    fig.update_layout(
+        title="",
+        showlegend=False,
+        yaxis_title="",
+        yaxis=dict(
+            categoryorder='total ascending',
+            automargin=True,
+            tickfont=dict(size=14),
+            type='category'
+        ),
+        margin=dict(l=100, r=50, t=50, b=50),
+        font=dict(color='black', size=12, family='Arial Black'),
+        plot_bgcolor='rgba(240, 240, 240, 0.8)',
+        height=chart_height,
+        bargap=0.7,
+        xaxis=dict(range=[0, chart_df['Count'].max() * 1.3])
+    )
 
-            fig.update_traces(textposition='outside', textfont_color='black', width=0.6)
-            fig.update_layout(
-                title="",
-                showlegend=False,
-                yaxis_title="",
-                yaxis=dict(
-                    categoryorder='total ascending',
-                    automargin=True,
-                    tickfont=dict(size=14),
-                    type='category'
-                ),
-                margin=dict(l=100, r=50, t=50, b=50),
-                font=dict(color='black', size=12, family='Arial Black'),
-                plot_bgcolor='rgba(240, 240, 240, 0.8)',
-                height=chart_height,
-                bargap=0.7,
-                xaxis=dict(range=[0, chart_df['Count'].max() * 1.3])
-            )
+    st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-            st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
+    # Interpretation below chart
+    st.write("**Interpretation:**")
+    for _, row in chart_df.iterrows():
+        st.write(f"- '{row['Response']}' received {int(row['Count'])} responses ({row['Percentage']}%)")
 
-    # Page Break Simulation after every 2 charts
+    # Page break after each chart
     st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Frontend Styling

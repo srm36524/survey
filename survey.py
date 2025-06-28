@@ -3,6 +3,12 @@ import pandas as pd
 import plotly.express as px
 import textwrap
 from io import BytesIO
+import plotly.io as pio
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image as XLImage
+from PIL import Image
+from tempfile import NamedTemporaryFile
+import os
 
 # Load data
 @st.cache_data
@@ -29,8 +35,9 @@ filtered_df.to_excel(data_output, index=False)
 data_output.seek(0)
 st.download_button("Download Filtered Data as Excel", data=data_output, file_name="Filtered_Survey_Data.xlsx")
 
-# Prepare chart summary data for export
+# Prepare chart summary and images for export
 chart_summary = []
+image_chart_data = []
 
 # Add space to avoid dropdown overlap with charts, charts start from second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
@@ -60,7 +67,7 @@ for i in range(0, len(questions), 2):
 
             chart_summary.append(chart_df.assign(Question=col))
 
-            # Wrap labels based on whole words, not characters
+            # Wrap labels based on whole words
             def wrap_label(label, width=25):
                 return "<br>".join(textwrap.wrap(label, width=width))
             chart_df['Wrapped_Response'] = chart_df['Response'].apply(lambda x: wrap_label(str(x)))
@@ -95,15 +102,35 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
+            # Save chart image to temp file for Excel
+            img_bytes = pio.to_image(fig, format='png', width=900, height=400, scale=2)
+            image_chart_data.append((col, img_bytes))
+
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 
-# Export chart summary to Excel
-if chart_summary:
-    summary_df = pd.concat(chart_summary, ignore_index=True)
-    excel_output = BytesIO()
-    summary_df.to_excel(excel_output, index=False)
-    excel_output.seek(0)
-    st.download_button("Download All Chart Data as Excel", data=excel_output, file_name="All_Chart_Summary.xlsx")
+# Export chart summary to Excel with images if available
+if image_chart_data:
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Survey Charts"
+    row_pos = 1
+
+    for title, img_bytes in image_chart_data:
+        ws.cell(row=row_pos, column=1).value = title
+        with NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+            tmp.write(img_bytes)
+            img_path = tmp.name
+
+        img = XLImage(img_path)
+        img.anchor = f'A{row_pos + 1}'
+        ws.add_image(img)
+        row_pos += 22
+        os.remove(img_path)
+
+    excel_img_output = BytesIO()
+    wb.save(excel_img_output)
+    excel_img_output.seek(0)
+    st.download_button("📊 Download All Charts as Excel", data=excel_img_output, file_name="Survey_Charts.xlsx")
 
 # Frontend Styling
 st.markdown("""

@@ -57,7 +57,8 @@ for i in range(0, len(questions), 2):
 
             fig.update_traces(textposition='outside', textfont_color='black')
             fig.update_layout(
-                yaxis={'categoryorder': 'total ascending'},
+                yaxis={'categoryorder': 'total ascending', 'automargin': True},
+                margin=dict(l=300, r=50, t=50, b=50),
                 font=dict(color='black', size=16, family='Arial Black'),
                 title_font=dict(color='black', size=18, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)'

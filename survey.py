@@ -22,11 +22,8 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# User-defined space between title and first chart
-space_between = st.number_input("Enter space (in pixels) between title and first chart:", min_value=0, max_value=500, value=100, step=10)
-
-# Add space to avoid dropdown overlap with charts, charts start from second page
-st.markdown(f'<div style="height: {space_between}px;"></div>', unsafe_allow_html=True)
+# Fixed space between title and first chart (450px)
+st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
 
 # Generate all charts, 2 per A4-like page layout with proper spacing
 questions = list(df.columns[2:])

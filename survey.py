@@ -71,16 +71,14 @@ for i in range(0, len(questions), 2):
             fig.update_traces(textposition='outside', textfont_color='black', width=0.6)
             fig.update_layout(
                 showlegend=False,
-                yaxis_title=None,
+                yaxis_title="",
                 yaxis=dict(
                     categoryorder='total ascending',
                     automargin=True,
-                    title=None,
                     tickfont=dict(size=14)
                 ),
                 margin=dict(l=100, r=50, t=50, b=50),
                 font=dict(color='black', size=12, family='Arial Black'),
-                title_font=dict(color='black', size=16, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)',
                 height=450,
                 bargap=0.7,

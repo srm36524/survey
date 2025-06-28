@@ -61,16 +61,16 @@ for i in range(0, len(questions), 2):
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
 
-            fig.update_traces(textposition='outside', textfont_color='black', width=0.3)
+            fig.update_traces(textposition='outside', textfont_color='black', width=0.7)
             fig.update_layout(
                 showlegend=False,
                 yaxis={'categoryorder': 'total ascending', 'automargin': True},
                 margin=dict(l=100, r=50, t=50, b=50),
-                font=dict(color='black', size=16, family='Arial Black'),
-                title_font=dict(color='black', size=18, family='Arial Black'),
+                font=dict(color='black', size=12, family='Arial Black'),
+                title_font=dict(color='black', size=16, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)',
                 height=450,
-                bargap=0.5
+                bargap=0.7
             )
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")

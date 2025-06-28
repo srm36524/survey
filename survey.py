@@ -2,14 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import textwrap
-from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-from tempfile import NamedTemporaryFile
-import os
-from PIL import Image
-import matplotlib.pyplot as plt
 
 # Load data
 @st.cache_data
@@ -34,12 +26,14 @@ st.title("Community Service Project - Survey Findings of Socio Economic Survey a
 st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
 
 questions = list(df.columns[2:])
-chart_images = []
 
 for i in range(0, len(questions), 2):
     for j in range(2):
         if i + j < len(questions):
             col = questions[i + j]
+            if col is None or str(col).strip().lower() == "undefined":
+                continue
+
             st.subheader(f"{col}", divider="rainbow")
 
             question_data = filtered_df[col].dropna()
@@ -91,42 +85,7 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-            # Create PNG chart for PDF with matplotlib instead of plotly
-            fig_, ax = plt.subplots(figsize=(10, 5))
-            ax.barh(chart_df['Response'], chart_df['Count'], color='skyblue')
-            for idx, val in enumerate(chart_df['Count']):
-                ax.text(val, idx, f"{val} ({chart_df['Percentage'][idx]}%)", va='center', fontsize=9)
-            ax.set_xlabel('Count')
-            ax.set_title(col)
-            plt.tight_layout()
-            tmp_img = NamedTemporaryFile(delete=False, suffix=".png")
-            plt.savefig(tmp_img.name, dpi=150)
-            plt.close()
-            chart_images.append(tmp_img.name)
-
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
-
-# PDF Export using Matplotlib images
-if chart_images:
-    pdf_buffer = BytesIO()
-    c = canvas.Canvas(pdf_buffer, pagesize=A4)
-    width, height = A4
-    for idx, img_path in enumerate(chart_images):
-        img = Image.open(img_path)
-        img_width, img_height = img.size
-        aspect = img_height / img_width
-        draw_width = width - 100
-        draw_height = draw_width * aspect
-        c.drawImage(ImageReader(img), 50, height - draw_height - 100, width=draw_width, height=draw_height)
-        if idx % 2 == 1 or idx == len(chart_images) - 1:
-            c.showPage()
-    c.save()
-    pdf_buffer.seek(0)
-
-    st.download_button("📄 Download Charts as PDF", data=pdf_buffer, file_name="Survey_Charts.pdf")
-
-    for img_path in chart_images:
-        os.remove(img_path)
 
 # Frontend Styling
 st.markdown("""

@@ -22,7 +22,7 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 st.title("Survey Results - Horizontal Bar Charts")
 
 # Generate charts for each question
-for col in df.columns[2:]:
+for idx, col in enumerate(df.columns[2:]):
     st.subheader(col)
     
     question_data = filtered_df[col].dropna()
@@ -52,7 +52,7 @@ for col in df.columns[2:]:
     fig.update_traces(textposition='outside')
     fig.update_layout(yaxis={'categoryorder': 'total ascending'})
 
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
 # Frontend Styling
 st.markdown("""

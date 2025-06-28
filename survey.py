@@ -6,10 +6,10 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
-import plotly.io as pio
 from tempfile import NamedTemporaryFile
 import os
 from PIL import Image
+import matplotlib.pyplot as plt
 
 # Load data
 @st.cache_data
@@ -91,13 +91,22 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-            with NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-                tmpfile.write(pio.to_image(fig, format='png', width=1000, height=500))
-                chart_images.append(tmpfile.name)
+            # Create PNG chart for PDF with matplotlib instead of plotly
+            fig_, ax = plt.subplots(figsize=(10, 5))
+            ax.barh(chart_df['Response'], chart_df['Count'], color='skyblue')
+            for idx, val in enumerate(chart_df['Count']):
+                ax.text(val, idx, f"{val} ({chart_df['Percentage'][idx]}%)", va='center', fontsize=9)
+            ax.set_xlabel('Count')
+            ax.set_title(col)
+            plt.tight_layout()
+            tmp_img = NamedTemporaryFile(delete=False, suffix=".png")
+            plt.savefig(tmp_img.name, dpi=150)
+            plt.close()
+            chart_images.append(tmp_img.name)
 
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 
-# PDF Export
+# PDF Export using Matplotlib images
 if chart_images:
     pdf_buffer = BytesIO()
     c = canvas.Canvas(pdf_buffer, pagesize=A4)
@@ -116,7 +125,6 @@ if chart_images:
 
     st.download_button("📄 Download Charts as PDF", data=pdf_buffer, file_name="Survey_Charts.pdf")
 
-    # Cleanup temp images
     for img_path in chart_images:
         os.remove(img_path)
 

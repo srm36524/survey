@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import textwrap
+from io import BytesIO
 
 # Load data
 @st.cache_data
@@ -20,6 +22,12 @@ selected_col2 = st.selectbox('Select ' + df.columns[1], col2_options)
 filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_col2)]
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
+
+# Export option
+excel_output = BytesIO()
+filtered_df.to_excel(excel_output, index=False)
+excel_output.seek(0)
+st.download_button("Download Filtered Data as Excel", data=excel_output, file_name="Filtered_Survey_Data.xlsx")
 
 # Add space to avoid dropdown overlap with charts, charts start from second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
@@ -47,9 +55,10 @@ for i in range(0, len(questions), 2):
                 'Percentage': percent_series.values
             })
 
-            # Wrap labels to avoid overlap
-            wrapped_labels = ["<br>".join([str(label)[i:i+25] for i in range(0, len(str(label)), 25)]) for label in chart_df['Response']]
-            chart_df['Wrapped_Response'] = wrapped_labels
+            # Wrap labels based on whole words, not characters
+            def wrap_label(label, width=25):
+                return "<br>".join(textwrap.wrap(label, width=width))
+            chart_df['Wrapped_Response'] = chart_df['Response'].apply(lambda x: wrap_label(str(x)))
 
             fig = px.bar(
                 chart_df,
@@ -61,22 +70,28 @@ for i in range(0, len(questions), 2):
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
 
-            fig.update_traces(textposition='outside', textfont_color='black', width=0.9)
+            fig.update_traces(textposition='outside', textfont_color='black', width=0.6)
             fig.update_layout(
                 showlegend=False,
-                yaxis={'categoryorder': 'total ascending', 'automargin': True},
+                yaxis={
+                    'categoryorder': 'total ascending',
+                    'automargin': True,
+                    'title_font': dict(size=14),
+                    'tickfont': dict(size=14)
+                },
                 margin=dict(l=100, r=50, t=50, b=50),
                 font=dict(color='black', size=12, family='Arial Black'),
                 title_font=dict(color='black', size=16, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)',
-                height=400,
-                bargap=0.9,
-                xaxis=dict(range=[0, chart_df['Count'].max() * 1.25])
+                height=450,
+                bargap=0.7,
+                xaxis=dict(range=[0, chart_df['Count'].max() * 1.3])
             )
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-    st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
+    # Ensure clear page break after each pair of charts
+    st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""
@@ -94,7 +109,7 @@ st.markdown("""
     }
     .pagebreak {
         page-break-after: always;
-        margin-top: 50px;
+        margin-top: 60px;
     }
 </style>
 """, unsafe_allow_html=True)

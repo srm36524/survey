@@ -70,6 +70,7 @@ for i in range(0, len(questions), 2):
 
             fig.update_traces(textposition='outside', textfont_color='black', width=0.6)
             fig.update_layout(
+                title="",
                 showlegend=False,
                 yaxis_title="",
                 yaxis=dict(

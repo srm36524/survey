@@ -23,9 +23,9 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
 # Fixed spacing after title
-st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
+st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
 
-# Filter valid question columns
+# Filter valid question columns only
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
 for i in range(0, len(questions), 2):
@@ -35,12 +35,18 @@ for i in range(0, len(questions), 2):
 
             st.subheader(f"{col}", divider="rainbow")
 
-            question_data = filtered_df[col].dropna()
+            question_data = filtered_df[col].dropna().astype(str)  # Treat responses as text
             if question_data.empty:
                 st.info("No responses for this question.")
                 continue
 
             count_series = question_data.value_counts().sort_values()
+            count_series = count_series[count_series > 0]  # Exclude options with zero count
+
+            if count_series.empty:
+                st.info("No valid responses to display.")
+                continue
+
             percent_series = (count_series / count_series.sum() * 100).round(2)
 
             chart_df = pd.DataFrame({
@@ -48,10 +54,6 @@ for i in range(0, len(questions), 2):
                 'Count': count_series.values,
                 'Percentage': percent_series.values
             })
-
-            if chart_df.empty:
-                st.info("No valid data to display chart.")
-                continue
 
             def wrap_label(label, width=25):
                 return "<br>".join(textwrap.wrap(label, width=width))
@@ -88,7 +90,12 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-    st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
+    if i + 2 < len(questions):
+        # Normal spacing between charts from one page to next page (no page break)
+        st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
+    else:
+        # Page break after every full set of 2 charts
+        st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""

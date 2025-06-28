@@ -25,25 +25,30 @@ st.title("Community Service Project - Survey Findings of Socio Economic Survey a
 # Fixed spacing after title
 st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
 
+# User-controlled spacing between charts within the same page
+spacing_between_charts = st.number_input(
+    "Spacing between charts within the same page (in pixels)", min_value=0, max_value=500, value=80, step=10
+)
+
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
 # Layout control
 chart_height = 450  # Height of each chart
-page_height = 1122  # Approx height of A4 in pixels (96 DPI screens)
+page_height = 1122  # Approx height of A4 in pixels
 remaining_space = page_height - (2 * chart_height)  # Space between charts to fit two per page
 
 for idx, col in enumerate(questions):
 
     st.subheader(f"{col}", divider="rainbow")
 
-    question_data = filtered_df[col].dropna().astype(str)  # Treat all responses as text
+    question_data = filtered_df[col].dropna().astype(str)
     if question_data.empty:
         st.info("No responses for this question.")
         continue
 
     count_series = question_data.value_counts()
-    count_series = count_series[count_series > 0]  # Remove zero count options
+    count_series = count_series[count_series > 0]
 
     if count_series.empty:
         st.info("No valid responses to display.")
@@ -78,10 +83,10 @@ for idx, col in enumerate(questions):
         showlegend=False,
         yaxis_title="",
         yaxis=dict(
-            categoryorder='total ascending',  # Sort based on counts
+            categoryorder='total ascending',
             automargin=True,
             tickfont=dict(size=14),
-            type='category'  # Force categorical axis to prevent numeric intervals
+            type='category'
         ),
         margin=dict(l=100, r=50, t=50, b=50),
         font=dict(color='black', size=12, family='Arial Black'),
@@ -93,11 +98,11 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Spacing logic: every 2 charts fit in one page exactly
+    # Layout spacing logic
     if (idx + 1) % 2 == 0:
         st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="height: {remaining_space}px;"></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="height: {spacing_between_charts}px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""

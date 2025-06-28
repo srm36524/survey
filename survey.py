@@ -2,6 +2,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import textwrap
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+import plotly.io as pio
+from tempfile import NamedTemporaryFile
+import os
+from PIL import Image
 
 # Load data
 @st.cache_data
@@ -25,8 +33,8 @@ st.title("Community Service Project - Survey Findings of Socio Economic Survey a
 # Fixed space between title and first chart (450px)
 st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
 
-# Generate all charts, 2 per A4-like page layout with proper spacing
 questions = list(df.columns[2:])
+chart_images = []
 
 for i in range(0, len(questions), 2):
     for j in range(2):
@@ -48,9 +56,9 @@ for i in range(0, len(questions), 2):
                 'Percentage': percent_series.values
             })
 
-            # Wrap labels based on whole words
             def wrap_label(label, width=25):
                 return "<br>".join(textwrap.wrap(label, width=width))
+
             chart_df['Wrapped_Response'] = chart_df['Response'].apply(lambda x: wrap_label(str(x)))
 
             fig = px.bar(
@@ -83,7 +91,34 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
+            with NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                tmpfile.write(pio.to_image(fig, format='png', width=1000, height=500))
+                chart_images.append(tmpfile.name)
+
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
+
+# PDF Export
+if chart_images:
+    pdf_buffer = BytesIO()
+    c = canvas.Canvas(pdf_buffer, pagesize=A4)
+    width, height = A4
+    for idx, img_path in enumerate(chart_images):
+        img = Image.open(img_path)
+        img_width, img_height = img.size
+        aspect = img_height / img_width
+        draw_width = width - 100
+        draw_height = draw_width * aspect
+        c.drawImage(ImageReader(img), 50, height - draw_height - 100, width=draw_width, height=draw_height)
+        if idx % 2 == 1 or idx == len(chart_images) - 1:
+            c.showPage()
+    c.save()
+    pdf_buffer.seek(0)
+
+    st.download_button("📄 Download Charts as PDF", data=pdf_buffer, file_name="Survey_Charts.pdf")
+
+    # Cleanup temp images
+    for img_path in chart_images:
+        os.remove(img_path)
 
 # Frontend Styling
 st.markdown("""

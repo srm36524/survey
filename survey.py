@@ -44,7 +44,7 @@ for i in range(0, len(questions), 2):
                 'Percentage': percent_series.values
             })
 
-            wrapped_labels = ["<br>".join(label[i:i+30] for i in range(0, len(label), 30)) for label in chart_df['Response']]
+            wrapped_labels = ["<br>".join(str(label)[i:i+30] for i in range(0, len(str(label)), 30)) for label in chart_df['Response']]
             chart_df['Wrapped_Response'] = wrapped_labels
 
             fig = px.bar(
@@ -61,7 +61,7 @@ for i in range(0, len(questions), 2):
             fig.update_layout(
                 showlegend=False,
                 yaxis={'categoryorder': 'total ascending', 'automargin': True},
-                margin=dict(l=250, r=50, t=50, b=50),
+                margin=dict(l=200, r=50, t=50, b=50),
                 font=dict(color='black', size=16, family='Arial Black'),
                 title_font=dict(color='black', size=18, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)'

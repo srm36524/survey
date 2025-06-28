@@ -39,12 +39,13 @@ for i in range(0, len(questions), 2):
             percent_series = (count_series / count_series.sum() * 100).round(2)
 
             chart_df = pd.DataFrame({
-                'Response': count_series.index,
+                'Response': count_series.index.astype(str),
                 'Count': count_series.values,
                 'Percentage': percent_series.values
             })
 
-            wrapped_labels = ["<br>".join(str(label)[i:i+30] for i in range(0, len(str(label)), 30)) for label in chart_df['Response']]
+            # Safely wrap labels and prevent 'undefined'
+            wrapped_labels = ["<br>".join([str(label)[i:i+25] for i in range(0, len(str(label)), 25)]) for label in chart_df['Response']]
             chart_df['Wrapped_Response'] = wrapped_labels
 
             fig = px.bar(
@@ -52,19 +53,20 @@ for i in range(0, len(questions), 2):
                 y='Wrapped_Response',
                 x='Count',
                 orientation='h',
-                text=chart_df.apply(lambda row: f"{row['Count']} ({row['Percentage']}%)", axis=1),
+                text=chart_df.apply(lambda row: f"{int(row['Count'])} ({row['Percentage']}%)", axis=1),
                 labels={'Count': 'Number of Responses', 'Wrapped_Response': 'Response Options'},
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
 
-            fig.update_traces(textposition='outside', textfont_color='black')
+            fig.update_traces(textposition='inside', textfont_color='white', cliponaxis=False)
             fig.update_layout(
                 showlegend=False,
                 yaxis={'categoryorder': 'total ascending', 'automargin': True},
-                margin=dict(l=200, r=50, t=50, b=50),
+                margin=dict(l=100, r=50, t=50, b=50),
                 font=dict(color='black', size=16, family='Arial Black'),
                 title_font=dict(color='black', size=18, family='Arial Black'),
-                plot_bgcolor='rgba(240, 240, 240, 0.8)'
+                plot_bgcolor='rgba(240, 240, 240, 0.8)',
+                height=500
             )
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")

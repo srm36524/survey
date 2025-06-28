@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import textwrap
-from io import BytesIO
-import plotly.io as pio
 
 # Load data
 @st.cache_data
@@ -24,17 +22,11 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Export filtered data to Excel
-data_output = BytesIO()
-filtered_df.to_excel(data_output, index=False)
-data_output.seek(0)
-st.download_button("Download Filtered Data as Excel", data=data_output, file_name="Filtered_Survey_Data.xlsx")
-
-# Prepare chart summary for export (counts and percentages only)
-chart_summary = []
+# User-defined space between title and first chart
+space_between = st.number_input("Enter space (in pixels) between title and first chart:", min_value=0, max_value=500, value=100, step=10)
 
 # Add space to avoid dropdown overlap with charts, charts start from second page
-st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
+st.markdown(f'<div style="height: {space_between}px;"></div>', unsafe_allow_html=True)
 
 # Generate all charts, 2 per A4-like page layout with proper spacing
 questions = list(df.columns[2:])
@@ -58,8 +50,6 @@ for i in range(0, len(questions), 2):
                 'Count': count_series.values,
                 'Percentage': percent_series.values
             })
-
-            chart_summary.append(chart_df.assign(Question=col))
 
             # Wrap labels based on whole words
             def wrap_label(label, width=25):
@@ -97,14 +87,6 @@ for i in range(0, len(questions), 2):
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
-
-# Export counts and percentages only to Excel
-if chart_summary:
-    summary_df = pd.concat(chart_summary, ignore_index=True)
-    summary_output = BytesIO()
-    summary_df[['Question', 'Response', 'Count', 'Percentage']].to_excel(summary_output, index=False)
-    summary_output.seek(0)
-    st.download_button("📊 Download Counts & Percentages as Excel", data=summary_output, file_name="Survey_Summary.xlsx")
 
 # Frontend Styling
 st.markdown("""

@@ -23,7 +23,7 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
 # Fixed spacing after title
-st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
+st.markdown('<div style="height: 550px;"></div>', unsafe_allow_html=True)
 
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]

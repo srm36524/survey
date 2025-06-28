@@ -28,6 +28,11 @@ st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
+# Constants to control A4-style layout
+chart_height = 450  # Height of each chart
+page_height = 1122  # Approx height in pixels of an A4 page (for 96 DPI screens)
+remaining_space = page_height - (2 * chart_height)  # Space left after two charts
+
 for idx, col in enumerate(questions):
 
     st.subheader(f"{col}", divider="rainbow")
@@ -80,20 +85,19 @@ for idx, col in enumerate(questions):
         margin=dict(l=100, r=50, t=50, b=50),
         font=dict(color='black', size=12, family='Arial Black'),
         plot_bgcolor='rgba(240, 240, 240, 0.8)',
-        height=450,
+        height=chart_height,
         bargap=0.7,
         xaxis=dict(range=[0, chart_df['Count'].max() * 1.3])
     )
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Insert controlled spacing before 3rd, 5th, 7th... charts
-    if (idx + 1) % 2 == 0 and (idx + 1) < len(questions):
-        # After every even chart, apply a clear page break
+    # After 2nd, 4th, 6th... chart insert a page break
+    if (idx + 1) % 2 == 0:
         st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
-    elif (idx + 1) % 2 != 0:
-        # After odd charts (1st, 3rd, 5th...), add spacing so next chart fits same page
-        st.markdown('<div style="height: 80px;"></div>', unsafe_allow_html=True)
+    else:
+        # Controlled spacing so next chart fits within same A4 page
+        st.markdown(f'<div style="height: {remaining_space}px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""

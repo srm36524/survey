@@ -25,13 +25,14 @@ st.title("Community Service Project - Survey Findings of Socio Economic Survey a
 # Fixed space between title and first chart (450px)
 st.markdown('<div style="height: 450px;"></div>', unsafe_allow_html=True)
 
-# Filter valid question columns only (non-empty, properly named)
-questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip() not in ["", "undefined", "nan", "NaN"]]
+questions = list(df.columns[2:])
 
 for i in range(0, len(questions), 2):
     for j in range(2):
         if i + j < len(questions):
             col = questions[i + j]
+            if col is None or str(col).strip().lower() == "undefined":
+                continue
 
             st.subheader(f"{col}", divider="rainbow")
 
@@ -49,10 +50,6 @@ for i in range(0, len(questions), 2):
                 'Percentage': percent_series.values
             })
 
-            if chart_df.empty:
-                st.info("No valid data to display chart.")
-                continue
-
             def wrap_label(label, width=25):
                 return "<br>".join(textwrap.wrap(label, width=width))
 
@@ -64,14 +61,13 @@ for i in range(0, len(questions), 2):
                 x='Count',
                 orientation='h',
                 text=chart_df.apply(lambda row: f"{int(row['Count'])} ({row['Percentage']}%)", axis=1),
-                labels={'Count': 'Number of Responses'},  # Removed y-axis label to avoid undefined
+                labels={'Count': 'Number of Responses', 'Wrapped_Response': 'Response Options'},
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
 
             fig.update_traces(textposition='outside', textfont_color='black', width=0.6)
             fig.update_layout(
                 showlegend=False,
-                yaxis_title=None,  # Completely remove y-axis label
                 yaxis={
                     'categoryorder': 'total ascending',
                     'automargin': True,

@@ -4,13 +4,6 @@ import plotly.express as px
 import textwrap
 from io import BytesIO
 import plotly.io as pio
-from openpyxl import Workbook
-from openpyxl.drawing.image import Image as XLImage
-from PIL import Image
-from tempfile import NamedTemporaryFile
-import os
-
-pio.kaleido.scope.default_format = "png"
 
 # Load data
 @st.cache_data
@@ -37,9 +30,8 @@ filtered_df.to_excel(data_output, index=False)
 data_output.seek(0)
 st.download_button("Download Filtered Data as Excel", data=data_output, file_name="Filtered_Survey_Data.xlsx")
 
-# Prepare chart summary and images for export
+# Prepare chart summary for export (counts and percentages only)
 chart_summary = []
-image_chart_data = []
 
 # Add space to avoid dropdown overlap with charts, charts start from second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
@@ -104,37 +96,15 @@ for i in range(0, len(questions), 2):
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")
 
-            try:
-                img_bytes = pio.to_image(fig, format='png', width=900, height=400, scale=2)
-                image_chart_data.append((col, img_bytes))
-            except Exception as e:
-                st.warning(f"Could not generate image for '{col}'. Ensure Kaleido is installed. {e}")
-
     st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
 
-# Export chart summary to Excel with images if available
-if image_chart_data:
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Survey Charts"
-    row_pos = 1
-
-    for title, img_bytes in image_chart_data:
-        ws.cell(row=row_pos, column=1).value = title
-        with NamedTemporaryFile(delete=False, suffix=".png") as tmp:
-            tmp.write(img_bytes)
-            img_path = tmp.name
-
-        img = XLImage(img_path)
-        img.anchor = f'A{row_pos + 1}'
-        ws.add_image(img)
-        row_pos += 22
-        os.remove(img_path)
-
-    excel_img_output = BytesIO()
-    wb.save(excel_img_output)
-    excel_img_output.seek(0)
-    st.download_button("📊 Download All Charts as Excel", data=excel_img_output, file_name="Survey_Charts.xlsx")
+# Export counts and percentages only to Excel
+if chart_summary:
+    summary_df = pd.concat(chart_summary, ignore_index=True)
+    summary_output = BytesIO()
+    summary_df[['Question', 'Response', 'Count', 'Percentage']].to_excel(summary_output, index=False)
+    summary_output.seek(0)
+    st.download_button("📊 Download Counts & Percentages as Excel", data=summary_output, file_name="Survey_Summary.xlsx")
 
 # Frontend Styling
 st.markdown("""

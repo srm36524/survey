@@ -19,12 +19,10 @@ selected_col2 = st.selectbox('Select ' + df.columns[1], col2_options)
 
 filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_col2)]
 
-st.title("Survey Results - Horizontal Bar Charts")
+st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Add space to avoid dropdown overlap with first charts
-st.markdown("""
-<div style="height: 50px;"></div>
-""", unsafe_allow_html=True)
+# Add space to avoid dropdown overlap with charts, charts start from second page
+st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Generate all charts, 2 per A4-like page layout with proper spacing
 questions = list(df.columns[2:])
@@ -63,7 +61,7 @@ for i in range(0, len(questions), 2):
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
 
-            fig.update_traces(textposition='outside', textfont_color='black', width=0.4)
+            fig.update_traces(textposition='outside', textfont_color='black', width=0.3)
             fig.update_layout(
                 showlegend=False,
                 yaxis={'categoryorder': 'total ascending', 'automargin': True},
@@ -72,7 +70,7 @@ for i in range(0, len(questions), 2):
                 title_font=dict(color='black', size=18, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)',
                 height=450,
-                bargap=0.4
+                bargap=0.5
             )
 
             st.plotly_chart(fig, use_container_width=True, key=f"chart_{i}_{j}")

@@ -51,14 +51,14 @@ for i in range(0, len(questions), 2):
                 orientation='h',
                 text=chart_df.apply(lambda row: f"{row['Count']} ({row['Percentage']}%)", axis=1),
                 labels={'Count': 'Number of Responses', 'Response': 'Response Options'},
-                color='Response',
                 color_discrete_sequence=px.colors.qualitative.Bold
             )
 
             fig.update_traces(textposition='outside', textfont_color='black')
             fig.update_layout(
+                showlegend=False,
                 yaxis={'categoryorder': 'total ascending', 'automargin': True},
-                margin=dict(l=300, r=50, t=50, b=50),
+                margin=dict(l=400, r=50, t=50, b=50),
                 font=dict(color='black', size=16, family='Arial Black'),
                 title_font=dict(color='black', size=18, family='Arial Black'),
                 plot_bgcolor='rgba(240, 240, 240, 0.8)'

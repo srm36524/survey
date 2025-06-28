@@ -11,7 +11,7 @@ def load_data():
 
 df = load_data()
 
-# Dropdowns for filtering
+# Dropdown filters
 col1_options = df.iloc[:, 0].dropna().unique()
 col2_options = df.iloc[:, 1].dropna().unique()
 
@@ -25,18 +25,12 @@ st.title("Community Service Project - Survey Findings of Socio Economic Survey a
 # Fixed spacing after title
 st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
 
-# User-controlled spacing between charts within the same page
-spacing_between_charts = st.number_input(
-    "Spacing between charts within the same page (in pixels)", min_value=0, max_value=500, value=80, step=10
-)
-
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Layout control
-chart_height = 450  # Height of each chart
-page_height = 1122  # Approx height of A4 in pixels
-remaining_space = page_height - (2 * chart_height)  # Space between charts to fit two per page
+# A5 page approximate height (for 96 DPI screens)
+a5_page_height = 793  # ~ 793px height for A5
+chart_height = 600  # Chart height to fit one per page
 
 for idx, col in enumerate(questions):
 
@@ -98,11 +92,8 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Layout spacing logic
-    if (idx + 1) % 2 == 0:
-        st.markdown('<div class="pagebreak" style="height: 60px;"></div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div style="height: {spacing_between_charts}px;"></div>', unsafe_allow_html=True)
+    # Page break after every chart (one per A5 page)
+    st.markdown('<div class="pagebreak" style="height: 50px;"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""
@@ -120,7 +111,7 @@ st.markdown("""
     }
     .pagebreak {
         page-break-after: always;
-        margin-top: 60px;
+        margin-top: 50px;
     }
 </style>
 """, unsafe_allow_html=True)

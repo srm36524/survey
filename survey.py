@@ -22,7 +22,7 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Force first chart to appear from second page
+# Force first chart to start from second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Filter valid question columns
@@ -33,14 +33,14 @@ max_question_length = max(len(str(q)) for q in questions)
 estimated_lines = (max_question_length // 80) + 1
 heading_space_px = estimated_lines * 20 + 10  # consistent heading space
 
-# A4 height simulation: 297mm ≈ 1122px, 1.5 cm top/bottom ≈ 57px
+# A4 height simulation: 297mm ≈ 1122px, margins 1.5 cm ≈ 57px
 a4_total_height_px = 1122
 top_bottom_margin_px = 57
 available_height = a4_total_height_px - (2 * top_bottom_margin_px)
-chart_height = available_height  # One chart per page
+chart_height = available_height / 2  # Two charts per A4 page
 
 for idx, col in enumerate(questions):
-
+    # Uniform heading space for all charts
     st.markdown(f'<div style="height: {heading_space_px}px; display:flex; align-items:center;"><h3>{col}</h3></div>', unsafe_allow_html=True)
 
     question_data = filtered_df[col].dropna().astype(str)
@@ -99,13 +99,9 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Interpretation below chart
-    st.write("**Interpretation:**")
-    for _, row in chart_df.iterrows():
-        st.write(f"- '{row['Response']}' received {int(row['Count'])} responses ({row['Percentage']}%)")
-
-    # Page break after each chart
-    st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
+    # Page break after every 2 charts
+    if (idx + 1) % 2 == 0:
+        st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Frontend Styling
 st.markdown("""

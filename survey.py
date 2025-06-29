@@ -18,30 +18,37 @@ col2_options = df.iloc[:, 1].dropna().unique()
 selected_col1 = st.selectbox(f"Select {df.columns[0]}", col1_options)
 selected_col2 = st.selectbox(f"Select {df.columns[1]}", col2_options)
 
-# Filter data based on dropdown selection
+# Filter based on dropdowns
 filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_col2)]
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Add full A4 page space to start first chart from second page
-st.markdown('<div style="height: 1122px;"></div>', unsafe_allow_html=True)
+# Page break to push first chart to second page
+st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
-# Get valid question columns
+# Questions filtering
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Heading space adjustment
+# Calculate heading space for uniformity
 max_question_length = max(len(str(q)) for q in questions)
 estimated_lines = (max_question_length // 60) + 1
 heading_space_px = estimated_lines * 25 + 20
 
-# A4 Height: 1122px; Margins Top/Bottom: 1cm ≈ 38px; Left: 2cm ≈ 76px
+# A4 page simulation (height 1122px), margins applied
 a4_total_height_px = 1122
-top_bottom_margin_px = 38
+top_bottom_margin_px = 38  # ≈ 1cm
+left_margin_px = 76        # ≈ 2cm
 available_height = a4_total_height_px - (2 * top_bottom_margin_px)
 chart_height = available_height / 2  # Two charts per A4
 
 for idx, col in enumerate(questions):
 
+    # After every two charts, simulate a full A4 page
+    if idx % 2 == 0:
+        st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="height: {top_bottom_margin_px}px;"></div>', unsafe_allow_html=True)
+
+    # Consistent heading space
     st.markdown(f'<div style="height: {heading_space_px}px; display:flex; align-items:center;"><h3>{col}</h3></div>', unsafe_allow_html=True)
 
     question_data = filtered_df[col].dropna().astype(str)
@@ -90,7 +97,7 @@ for idx, col in enumerate(questions):
             tickfont=dict(size=14),
             type='category'
         ),
-        margin=dict(l=76, r=50, t=50, b=50),
+        margin=dict(l=left_margin_px, r=50, t=50, b=50),
         font=dict(color='black', size=12, family='Arial Black'),
         plot_bgcolor='rgba(240, 240, 240, 0.8)',
         height=chart_height,
@@ -100,11 +107,7 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-    # Page break after every 2 charts
-    if (idx + 1) % 2 == 0:
-        st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
-
-# Styling
+# CSS for print-friendly layout
 st.markdown("""
 <style>
     .css-18e3th9 {

@@ -18,17 +18,18 @@ col2_options = df.iloc[:, 1].dropna().unique()
 selected_col1 = st.selectbox(f"Select {df.columns[0]}", col1_options)
 selected_col2 = st.selectbox(f"Select {df.columns[1]}", col2_options)
 
+# Filter data based on dropdown selection
+filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_col2)]
+
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Add space equivalent to full A4 page to push first chart to second page
-st.markdown("""
-<div style="height: 1122px;"></div>
-""", unsafe_allow_html=True)
+# Add full A4 page space to start first chart from second page
+st.markdown('<div style="height: 1122px;"></div>', unsafe_allow_html=True)
 
-# Valid question columns
+# Get valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Calculate heading space based on longest question
+# Heading space adjustment
 max_question_length = max(len(str(q)) for q in questions)
 estimated_lines = (max_question_length // 60) + 1
 heading_space_px = estimated_lines * 25 + 20
@@ -37,7 +38,7 @@ heading_space_px = estimated_lines * 25 + 20
 a4_total_height_px = 1122
 top_bottom_margin_px = 38
 available_height = a4_total_height_px - (2 * top_bottom_margin_px)
-chart_height = available_height / 2
+chart_height = available_height / 2  # Two charts per A4
 
 for idx, col in enumerate(questions):
 
@@ -99,10 +100,11 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
+    # Page break after every 2 charts
     if (idx + 1) % 2 == 0:
         st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
-# Frontend Styling
+# Styling
 st.markdown("""
 <style>
     .css-18e3th9 {

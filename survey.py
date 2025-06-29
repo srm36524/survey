@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import textwrap
 
-# Load Data
+# Load data
 @st.cache_data
 def load_data():
     df = pd.read_excel('Survey123.xlsx', engine='openpyxl')
@@ -18,15 +18,19 @@ col2_options = df.iloc[:, 1].dropna().unique()
 selected_col1 = st.selectbox(f"Select {df.columns[0]}", col1_options)
 selected_col2 = st.selectbox(f"Select {df.columns[1]}", col2_options)
 
-# Filter based on dropdowns
 filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_col2)]
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
+# User input for space before first chart (hidden in print)
+with st.expander("Chart Layout Settings (Hidden in Print)"):
+    space_before_first_chart = st.number_input("Space after title before first chart (in pixels):", min_value=100, max_value=2000, value=450, step=50)
+
 # Page break to push first chart to second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
+st.markdown(f'<div style="height: {space_before_first_chart}px;"></div>', unsafe_allow_html=True)
 
-# Questions filtering
+# Filter valid questions
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
 # Calculate heading space for uniformity
@@ -43,7 +47,7 @@ chart_height = available_height / 2  # Two charts per A4
 
 for idx, col in enumerate(questions):
 
-    # After every two charts, simulate a full A4 page
+    # Page break after every 2 charts
     if idx % 2 == 0:
         st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
         st.markdown(f'<div style="height: {top_bottom_margin_px}px;"></div>', unsafe_allow_html=True)
@@ -107,7 +111,7 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-# CSS for print-friendly layout
+# Frontend Styling
 st.markdown("""
 <style>
     .css-18e3th9 {
@@ -123,6 +127,11 @@ st.markdown("""
     }
     .pagebreak {
         page-break-after: always;
+    }
+    @media print {
+        .stExpander {
+            display: none;
+        }
     }
 </style>
 """, unsafe_allow_html=True)

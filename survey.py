@@ -22,37 +22,50 @@ filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_c
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# User input for space before first chart (hidden in print)
-with st.expander("Chart Layout Settings (Hidden in Print)"):
-    space_before_first_chart = st.number_input("Space after title before first chart (in pixels):", min_value=100, max_value=2000, value=450, step=50)
+# User space before first chart (hidden in print)
+with st.expander("Layout Settings (Hidden in Print)"):
+    space_before_first_chart = st.number_input("Space after title before first chart (pixels):", min_value=100, max_value=2000, value=450, step=50)
+    manual_breaks = st.text_input("Manual Page Breaks (comma-separated chart numbers, e.g., 3,5,9):")
 
-# Page break to push first chart to second page
+# First chart starts after page break
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 st.markdown(f'<div style="height: {space_before_first_chart}px;"></div>', unsafe_allow_html=True)
 
 # Filter valid questions
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Calculate heading space for uniformity
+# Max heading space for uniformity
 max_question_length = max(len(str(q)) for q in questions)
 estimated_lines = (max_question_length // 60) + 1
 heading_space_px = estimated_lines * 25 + 20
 
-# A4 page simulation (height 1122px), margins applied
+# A4 dimensions
 a4_total_height_px = 1122
-top_bottom_margin_px = 38  # ≈ 1cm
-left_margin_px = 76        # ≈ 2cm
+top_bottom_margin_px = 38  # ~1cm
+left_margin_px = 76        # ~2cm
 available_height = a4_total_height_px - (2 * top_bottom_margin_px)
-chart_height = available_height / 2  # Two charts per A4
+chart_height = available_height / 2
 
+# Process manual page breaks
+manual_break_set = set()
+if manual_breaks.strip():
+    try:
+        manual_break_set = set(int(x.strip()) for x in manual_breaks.split(",") if x.strip().isdigit())
+    except:
+        st.warning("Invalid manual break input. Use comma-separated numbers like 2,5,8")
+
+# Charts
 for idx, col in enumerate(questions):
 
-    # Page break after every 2 charts
+    # Automatic page break every 2 charts
     if idx % 2 == 0:
         st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
         st.markdown(f'<div style="height: {top_bottom_margin_px}px;"></div>', unsafe_allow_html=True)
 
-    # Consistent heading space
+    # Manual page break
+    if (idx + 1) in manual_break_set:
+        st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
+
     st.markdown(f'<div style="height: {heading_space_px}px; display:flex; align-items:center;"><h3>{col}</h3></div>', unsafe_allow_html=True)
 
     question_data = filtered_df[col].dropna().astype(str)
@@ -111,7 +124,7 @@ for idx, col in enumerate(questions):
 
     st.plotly_chart(fig, use_container_width=True, key=f"chart_{idx}")
 
-# Frontend Styling
+# Styling
 st.markdown("""
 <style>
     .css-18e3th9 {
@@ -136,4 +149,4 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.success("Select filters to view question-wise bar charts.")
+st.success("Select filters to view charts. You can control layout with spacing and manual page breaks.")

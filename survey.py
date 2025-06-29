@@ -3,10 +3,10 @@ import pandas as pd
 import plotly.express as px
 import textwrap
 
-# Load data
+# Load Data
 @st.cache_data
 def load_data():
-    df = pd.read_excel('Survey123.xlsx')
+    df = pd.read_excel('Survey123.xlsx', engine='openpyxl')
     return df
 
 df = load_data()
@@ -15,31 +15,32 @@ df = load_data()
 col1_options = df.iloc[:, 0].dropna().unique()
 col2_options = df.iloc[:, 1].dropna().unique()
 
-selected_col1 = st.selectbox('Select ' + df.columns[0], col1_options)
-selected_col2 = st.selectbox('Select ' + df.columns[1], col2_options)
+selected_col1 = st.selectbox(f"Select {df.columns[0]}", col1_options)
+selected_col2 = st.selectbox(f"Select {df.columns[1]}", col2_options)
 
 filtered_df = df[(df.iloc[:, 0] == selected_col1) & (df.iloc[:, 1] == selected_col2)]
 
 st.title("Community Service Project - Survey Findings of Socio Economic Survey and Skilling and Employment Survey")
 
-# Force first chart to start from second page
+# Force first chart to start on second page
 st.markdown('<div class="pagebreak"></div>', unsafe_allow_html=True)
 
 # Filter valid question columns
 questions = [col for col in df.columns[2:] if isinstance(col, str) and col.strip().lower() not in ["", "undefined", "nan"]]
 
-# Pre-calculate max heading space based on longest question
+# Calculate maximum heading space based on longest question
 max_question_length = max(len(str(q)) for q in questions)
-estimated_lines = (max_question_length // 80) + 1
-heading_space_px = estimated_lines * 20 + 10  # consistent heading space
+estimated_lines = (max_question_length // 60) + 1
+heading_space_px = estimated_lines * 25 + 20  # Increased space for long headings
 
-# A4 height simulation: 297mm ≈ 1122px, margins 1.5 cm ≈ 57px
+# A4 height simulation: 297mm ≈ 1122px, margins 1cm top/bottom = 38px, left 2cm = 76px
 a4_total_height_px = 1122
-top_bottom_margin_px = 57
+top_bottom_margin_px = 38
 available_height = a4_total_height_px - (2 * top_bottom_margin_px)
 chart_height = available_height / 2  # Two charts per A4 page
 
 for idx, col in enumerate(questions):
+
     # Uniform heading space for all charts
     st.markdown(f'<div style="height: {heading_space_px}px; display:flex; align-items:center;"><h3>{col}</h3></div>', unsafe_allow_html=True)
 
@@ -89,7 +90,7 @@ for idx, col in enumerate(questions):
             tickfont=dict(size=14),
             type='category'
         ),
-        margin=dict(l=100, r=50, t=50, b=50),
+        margin=dict(l=76, r=50, t=50, b=50),  # Left margin 2cm (76px)
         font=dict(color='black', size=12, family='Arial Black'),
         plot_bgcolor='rgba(240, 240, 240, 0.8)',
         height=chart_height,
